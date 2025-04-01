@@ -25,10 +25,10 @@ func GetInventoryCollection(client *mongo.Client) *mongo.Collection {
 // CreateItem adds a new item to the inventory
 func CreateItem(client *mongo.Client, item Item) error {
 	collection := GetInventoryCollection(client)
-	
+
 	item.CreatedAt = time.Now()
 	item.UpdatedAt = time.Now()
-	
+
 	_, err := collection.InsertOne(context.TODO(), item)
 	return err
 }
