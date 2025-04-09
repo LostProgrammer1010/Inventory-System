@@ -2,12 +2,14 @@ package post
 
 import (
 	"encoding/json"
-	"github.com/LostProgrammer1010/InventorySystem/internal/db"
 	"net/http"
+
+	"github.com/LostProgrammer1010/InventorySystem/internal/db"
+	"github.com/LostProgrammer1010/InventorySystem/internal/models"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	var newUser db.User
+	var newUser models.User
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -18,6 +20,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	db.CreateUser(newUser)
+	err = db.AddUser(newUser)
+
+	return
 
 }

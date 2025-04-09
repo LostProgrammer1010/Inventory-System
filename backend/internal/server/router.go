@@ -12,6 +12,7 @@ func createRouter() http.Handler {
 		w.Write([]byte("Hello, world!"))
 	})
 	router.HandleFunc("/user/add", post.CreateUser)
+	router.HandleFunc("/user/login", post.Login)
 
 	return router
 }
