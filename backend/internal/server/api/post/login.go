@@ -21,17 +21,35 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&user)
 
-	jwtToken, err := LoginInUser(user)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Could not parse json"))
+		return
+	}
+
+	jwtToken, err := LoginInUser(user, r.UserAgent())
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
 		return
 	}
-	fmt.Println(jwtToken)
+
+	err = json.NewEncoder(w).Encode(map[string]string{
+		"jwt": jwtToken,
+	})
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	return
 
 }
 
-func LoginInUser(user models.User) (string, error) {
+func LoginInUser(user models.User, userAgent string) (string, error) {
 	possibleUser, err := db.GetUserByUsername(user.Username)
 
 	if err != nil {
@@ -48,5 +66,19 @@ func LoginInUser(user models.User) (string, error) {
 		return "", err
 	}
 
+	updateRefreshToken(possibleUser, userAgent)
+
 	return jwtToken, err
+}
+
+func updateRefreshToken(user *models.User, userAgent string) error {
+	token, err := authentication.CreateRefreshToken(*user, userAgent)
+
+	if err != nil {
+		return err
+	}
+
+	db.UpdateUserRefreshToken(*user, *token)
+
+	return nil
 }

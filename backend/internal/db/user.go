@@ -7,6 +7,7 @@ import (
 	"github.com/LostProgrammer1010/InventorySystem/internal/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
@@ -32,7 +33,7 @@ func AddUser(user models.User) (err error) {
 }
 
 // Retrieves a user from the db and return the users if they were found
-func GetUser(id primitive.ObjectID) (foundUser *models.User, err error) {
+func GetUserById(id primitive.ObjectID) (foundUser *models.User, err error) {
 	filter := bson.M{"_id": id}
 
 	err = userCollection.FindOne(context.TODO(), filter).Decode(&foundUser)
@@ -55,4 +56,40 @@ func GetUserByUsername(username string) (foundUser *models.User, err error) {
 	}
 
 	return
+}
+
+func UpdateUserRefreshToken(user models.User, token models.RefreshToken) error {
+
+	filter := bson.M{"_id": user.ID}
+	update := bson.M{
+		"$set": bson.M{
+			"refreshtoken.$[elem]": token,
+		},
+	}
+
+	arrayFilters := options.Update().SetArrayFilters(options.ArrayFilters{
+		Filters: []interface{}{
+			bson.M{"elem.user_agent": token.UserAgent},
+		},
+	})
+
+	result, err := userCollection.UpdateOne(context.TODO(), filter, update, arrayFilters)
+
+	if err != nil {
+		return err
+	}
+
+	if result.ModifiedCount == 0 {
+		pushUpdate := bson.M{
+			"$push": bson.M{
+				"refreshtoken": token,
+			},
+		}
+		_, err = userCollection.UpdateOne(context.TODO(), bson.M{"_id": user.ID}, pushUpdate)
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
