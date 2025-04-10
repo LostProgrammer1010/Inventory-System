@@ -16,8 +16,9 @@ var client *mongo.Client
 func Init() {
 
 	connect()
+	userCollection = client.Database("InventorySystem").Collection("Users")
 
-	createUniqueIndexes(client.Database("InventorySystem").Collection("Users"))
+	createUniqueIndexes(client.Database("InventorySystem").Collection("Users"), []string{"email", "username"})
 }
 
 func connect() {
@@ -38,12 +39,13 @@ func connect() {
 	fmt.Println("Connected to MongoDB cluster Successfully")
 }
 
-func createUniqueIndexes(collection *mongo.Collection) error {
-	indexes := []mongo.IndexModel{
-		{
-			Keys:    bson.D{{Key: "email", Value: 1}},
+func createUniqueIndexes(collection *mongo.Collection, uniqueKeys []string) error {
+	var indexes []mongo.IndexModel
+	for _, key := range uniqueKeys {
+		indexes = append(indexes, mongo.IndexModel{
+			Keys:    bson.D{{Key: key, Value: 1}},
 			Options: options.Index().SetUnique(true),
-		},
+		})
 	}
 
 	_, err := collection.Indexes().CreateMany(context.TODO(), indexes)

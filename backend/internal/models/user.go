@@ -5,11 +5,18 @@ import (
 )
 
 type User struct {
-	ID           primitive.ObjectID `json:"_id" bson:"_id"`
+	ID           primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Username     string             `json:"username" bson:"username"`
+	FirstName    string             `json:"first_name" bson:"first_name"`
+	LastName     string             `json:"last_name" bson:"last_name"`
 	Password     string             `json:"password" bson:"password"`
 	Email        string             `json:"email" bson:"email"`
 	Role         string             `json:"role" bson:"role"`
-	Organization string             `json:"organization" bson:"organization"`
-	refreshToken RefreshToken       `bason:"refreshtoken"`
+	Organization []Organization     `json:"organization" bson:"organization"`
+	RefreshToken []RefreshToken     `bason:"refresh_token"`
+}
+
+type Organization struct {
+	Name string
+	Role string
 }

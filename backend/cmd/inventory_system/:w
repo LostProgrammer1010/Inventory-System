@@ -1,0 +1,63 @@
+package db
+
+import (
+	"context"
+	"strings"
+	"testing"
+
+	"github.com/LostProgrammer1010/InventorySystem/internal/authentication"
+	"github.com/LostProgrammer1010/InventorySystem/internal/models"
+	"github.com/LostProgrammer1010/InventorySystem/internal/server/api/post"
+)
+
+func TestMain(t *testing.T) {
+
+	connect()
+	userCollection = client.Database("InventorySystem_test").Collection("User_test")
+}
+
+func TestAddUser(t *testing.T) {
+	test_user := models.User{
+		Username:     "LostProgrammer1010",
+		Password:     "123",
+		FirstName:    "Dustin",
+		LastName:     "Meyer",
+		Organization: []models.Organization{{Name: "NSVC", Role: "ADMIN"}},
+	}
+	err := AddUser(test_user)
+
+	if err != nil {
+		t.Error("Adding the User to the DB Failed", err)
+	}
+
+	found_user, err := GetUserByUsername(test_user.Username)
+
+	if err != nil {
+		t.Errorf("Could not find user in Database")
+	}
+
+	if !strings.EqualFold(test_user.Username, found_user.Username) {
+		t.Errorf("Found: %s != Test_User: %s", found_user.Username, test_user.Username)
+	}
+
+	if authentication.VerifyPassword(found_user.Password, test_user.Password){ 
+		t.Errorf("Found: %s != Test_User: %s", found_user.Password, test_user.Password)
+
+	if !strings.EqualFold(test_user.FirstName, found_user.FirstName) {
+		t.Errorf("Found: %s != Test_User: %s", found_user.FirstName, test_user.FirstName)
+	}
+
+	if !strings.EqualFold(test_user.LastName, found_user.LastName) {
+		t.Errorf("Found: %s != Test_User: %s", found_user.LastName, test_user.LastName)
+	}
+
+	if !strings.EqualFold(test_user.Organization[0].Name, found_user.Organization[0].Name) {
+		t.Errorf("Found: %s != Test_User: %s", found_user.Organization[0].Name, test_user.Organization[0].Name)
+	}
+
+	if !strings.EqualFold(test_user.Organization[0].Role, found_user.Organization[0].Role) {
+		t.Errorf("Found: %s != Test_User: %s", found_user.Organization[0].Role, test_user.Organization[0].Role)
+	}
+
+	userCollection.Drop(context.TODO())
+}
