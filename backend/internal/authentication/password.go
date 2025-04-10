@@ -1,6 +1,18 @@
 package authentication
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"golang.org/x/crypto/bcrypt"
+)
+
+func VerifyPassword(encryptedPassword string, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(encryptedPassword), []byte(password))
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
 
 // Turns a plain text password into a hashed password
 func HashPassword(password string) (string, error) {
@@ -11,15 +23,4 @@ func HashPassword(password string) (string, error) {
 	}
 
 	return string(hashedPassword), err
-}
-
-// Checks the incoming password against the encrypted password
-func VerifePassword(encryptedPassword string, password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(encryptedPassword), []byte(password))
-
-	if err != nil {
-		return false
-	}
-
-	return true
 }

@@ -16,6 +16,7 @@ var client *mongo.Client
 func Init() {
 
 	connect()
+	userCollection = client.Database("InventorySystem").Collection("Users")
 
 	createUniqueIndexes(client.Database("InventorySystem").Collection("Users"), []string{"email", "username"})
 }
