@@ -16,6 +16,8 @@ func createRouter() http.Handler {
 	router.HandleFunc("/user/add", post.AddUser)
 	router.HandleFunc("/user/", get.GetUserById)
 	router.HandleFunc("/user/login", post.Login)
+	router.HandleFunc("/pole/add", post.AddPole)
+	router.HandleFunc("/organization/add", post.AddOrganization)
 
 	return router
 }

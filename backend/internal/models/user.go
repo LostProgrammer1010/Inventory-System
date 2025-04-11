@@ -11,12 +11,6 @@ type User struct {
 	LastName     string             `json:"last_name" bson:"last_name"`
 	Password     string             `json:"password" bson:"password"`
 	Email        string             `json:"email" bson:"email"`
-	Role         string             `json:"role" bson:"role"`
 	Organization []Organization     `json:"organization" bson:"organization"`
 	RefreshToken []RefreshToken     `bason:"refresh_token"`
-}
-
-type Organization struct {
-	Name string
-	Role string
 }

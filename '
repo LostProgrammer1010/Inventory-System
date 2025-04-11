@@ -1,0 +1,10 @@
+package post
+
+import "net/http"
+
+func AddPole(w http.ResponseWriter, r *http.Request) {
+	if !checkMethod(r) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+}

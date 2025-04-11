@@ -3,19 +3,31 @@ package authentication
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
+	"strings"
+	"time"
+
 	"github.com/LostProgrammer1010/InventorySystem/internal/models"
 	"github.com/golang-jwt/jwt/v5"
-	"time"
 )
 
 // Will need to be updated to something else in env to set the jwtKey values
 var jwtKey = []byte("Very Secret Key")
 
 func CreateJWTAuthenticationToken(user models.User) (string, error) {
+	var authorizedOrganization []models.Organization
+
+	for _, organization := range user.Organization {
+		if organization.Role == "ADMIN" || organization.Role == "OWNER" {
+			authorizedOrganization = append(authorizedOrganization, organization)
+		}
+	}
+
 	claims := jwt.MapClaims{
-		"userID":    user.ID,
-		"expiresAt": time.Now().Add(15 * time.Minute).Unix(),
-		"GivenAt":   time.Now(),
+		"UserID":           user.ID,
+		"OrganizationAuth": authorizedOrganization,
+		"ExpiresAt":        time.Now().Add(15 * time.Minute).Unix(),
+		"GivenAt":          time.Now(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -39,4 +51,37 @@ func CreateRefreshToken(user models.User, broswerAgent string) (*models.RefreshT
 	}
 
 	return &refreshToken, nil
+}
+
+func VerifyJWTToken(oAuth string) (any, error) {
+	parts := strings.Split(oAuth, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return nil, fmt.Errorf("Invalid Authorization header")
+	}
+	tokenString := parts[1]
+	token, err := checkSignature(tokenString)
+
+	if err != nil {
+		return nil, err
+	}
+
+	claims := token.Claims.(jwt.MapClaims)
+
+	return claims, nil
+}
+
+func checkSignature(tokenString string) (*jwt.Token, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method")
+		}
+		return jwtKey, nil
+	})
+
+	if err != nil || !token.Valid {
+		return nil, fmt.Errorf("Invalid Authorization Token")
+	}
+
+	return token, nil
+
 }
