@@ -68,7 +68,7 @@ func UpdateUserRefreshToken(user models.User, token models.RefreshToken) error {
 	}
 
 	arrayFilters := options.Update().SetArrayFilters(options.ArrayFilters{
-		Filters: []interface{}{
+		Filters: []any{
 			bson.M{"elem.user_agent": token.UserAgent},
 		},
 	})
@@ -92,4 +92,16 @@ func UpdateUserRefreshToken(user models.User, token models.RefreshToken) error {
 		}
 	}
 	return nil
+}
+
+func UpdateUser(user models.User) error {
+	filter := bson.M{"_id": user.ID}
+	update := bson.M{
+		"$set": bson.M{
+			"organization_auth": user.OrganizationAuthorization,
+		},
+	}
+	_, err := userCollection.UpdateOne(context.TODO(), filter, update)
+
+	return err
 }

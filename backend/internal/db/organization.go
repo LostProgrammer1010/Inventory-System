@@ -4,19 +4,20 @@ import (
 	"context"
 
 	"github.com/LostProgrammer1010/InventorySystem/internal/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var organizationCollection *mongo.Collection
 
-func AddOrgranization(organization models.Organization) error {
+func AddOrgranization(organization models.Organization) (primitive.ObjectID, error) {
 
-	_, err := organizationCollection.InsertOne(context.TODO(), organization)
+	result, err := organizationCollection.InsertOne(context.TODO(), organization)
 
 	if err != nil {
-		return err
+		return primitive.NilObjectID, err
 	}
 
-	return nil
+	return result.InsertedID.(primitive.ObjectID), nil
 
 }

@@ -15,9 +15,9 @@ import (
 var jwtKey = []byte("Very Secret Key")
 
 func CreateJWTAuthenticationToken(user models.User) (string, error) {
-	var authorizedOrganization []models.Organization
+	var authorizedOrganization []models.OrganizationAuthorization
 
-	for _, organization := range user.Organization {
+	for _, organization := range user.OrganizationAuthorization {
 		if organization.Role == "ADMIN" || organization.Role == "OWNER" {
 			authorizedOrganization = append(authorizedOrganization, organization)
 		}
@@ -25,9 +25,9 @@ func CreateJWTAuthenticationToken(user models.User) (string, error) {
 
 	claims := jwt.MapClaims{
 		"UserID":           user.ID,
-		"OrganizationAuth": authorizedOrganization,
+		"OrganizationAuth": user.OrganizationAuthorization,
 		"ExpiresAt":        time.Now().Add(15 * time.Minute).Unix(),
-		"GivenAt":          time.Now(),
+		"GivenAt":          time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -53,7 +53,7 @@ func CreateRefreshToken(user models.User, broswerAgent string) (*models.RefreshT
 	return &refreshToken, nil
 }
 
-func VerifyJWTToken(oAuth string) (any, error) {
+func VerifyJWTToken(oAuth string) (jwt.MapClaims, error) {
 	parts := strings.Split(oAuth, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
 		return nil, fmt.Errorf("Invalid Authorization header")
@@ -66,6 +66,16 @@ func VerifyJWTToken(oAuth string) (any, error) {
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
+
+	expUnix, ok := claims["ExpiresAt"].(float64)
+
+	if !ok {
+		return nil, err
+	}
+
+	if int64(expUnix) < time.Now().Unix() {
+		return nil, err
+	}
 
 	return claims, nil
 }
