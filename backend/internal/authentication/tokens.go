@@ -74,7 +74,7 @@ func VerifyJWTToken(oAuth string) (jwt.MapClaims, error) {
 	}
 
 	if int64(expUnix) < time.Now().Unix() {
-		return nil, err
+		return nil, fmt.Errorf("Authorization token expired")
 	}
 
 	return claims, nil

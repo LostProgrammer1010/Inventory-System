@@ -2,7 +2,6 @@ package post
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/LostProgrammer1010/InventorySystem/internal/authentication"
@@ -33,32 +32,46 @@ func AddOrganization(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&organization)
 
 	if err != nil {
-		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Invalid organization"))
 		return
 	}
 
 	addOrganizationID, err := db.AddOrgranization(organization)
 
 	if err != nil {
-		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to add organization to Database"))
 		return
 	}
-	fmt.Println(claims["UserID"])
 
 	userID, err := primitive.ObjectIDFromHex(claims["UserID"].(string))
 
 	if err != nil {
-		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to get primitve object from jwt token"))
 		return
 	}
 
 	user, err := db.GetUserById(userID)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to get primitve object from jwt token"))
+		return
+	}
 
 	newOrganization := models.OrganizationAuthorization{OrganizationID: addOrganizationID, Role: "Owner"}
 
 	user.OrganizationAuthorization = append(user.OrganizationAuthorization, newOrganization)
 
 	err = db.UpdateUser(*user)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Failed to update user in DB with organization"))
+		return
+	}
 
 	NewAuthToken, err := authentication.CreateJWTAuthenticationToken(*user)
 
