@@ -8,6 +8,7 @@ import (
 	"github.com/LostProgrammer1010/InventorySystem/internal/authentication"
 	"github.com/LostProgrammer1010/InventorySystem/internal/models"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestMain(m *testing.M) {
@@ -22,12 +23,12 @@ func TestMain(m *testing.M) {
 
 func TestAddUser(t *testing.T) {
 	test_user := models.User{
-		Username:     "LostProgrammer1010",
-		Password:     "123",
-		FirstName:    "Dustin",
-		LastName:     "Meyer",
-		Email:        "check@gmail.com",
-		Organization: []models.Organization{{Name: "NSVC", Role: "ADMIN"}},
+		Username:                  "LostProgrammer1010",
+		Password:                  "123",
+		FirstName:                 "Dustin",
+		LastName:                  "Meyer",
+		Email:                     "check@gmail.com",
+		OrganizationAuthorization: []models.OrganizationAuthorization{{OrganizationID: primitive.NewObjectID(), Role: "ADMIN"}},
 	}
 	err := AddUser(test_user)
 
@@ -41,19 +42,19 @@ func TestAddUser(t *testing.T) {
 	assert.True(t, authentication.VerifyPassword(found_user.Password, test_user.Password))
 	assert.Equal(t, test_user.FirstName, found_user.FirstName)
 	assert.Equal(t, test_user.LastName, found_user.LastName)
-	assert.Equal(t, test_user.Organization[0].Name, found_user.Organization[0].Name)
-	assert.Equal(t, test_user.Organization[0].Role, found_user.Organization[0].Role)
+	assert.Equal(t, test_user.OrganizationAuthorization[0].OrganizationID, found_user.OrganizationAuthorization[0].OrganizationID)
+	assert.Equal(t, test_user.OrganizationAuthorization[0].Role, found_user.OrganizationAuthorization[0].Role)
 
 }
 
 func TestAddSameUser(t *testing.T) {
 	test_user := models.User{
-		Username:     "LostProgrammer1010",
-		Password:     "123",
-		FirstName:    "Dustin",
-		LastName:     "Meyer",
-		Email:        "check@gmail.com",
-		Organization: []models.Organization{{Name: "NSVC", Role: "ADMIN"}},
+		Username:                  "LostProgrammer1010",
+		Password:                  "123",
+		FirstName:                 "Dustin",
+		LastName:                  "Meyer",
+		Email:                     "check@gmail.com",
+		OrganizationAuthorization: []models.OrganizationAuthorization{{OrganizationID: primitive.NewObjectID(), Role: "ADMIN"}},
 	}
 	err := AddUser(test_user)
 	assert.Error(t, err)
@@ -66,19 +67,19 @@ func TestAddSameUser(t *testing.T) {
 	assert.True(t, authentication.VerifyPassword(found_user.Password, test_user.Password))
 	assert.Equal(t, test_user.FirstName, found_user.FirstName)
 	assert.Equal(t, test_user.LastName, found_user.LastName)
-	assert.Equal(t, test_user.Organization[0].Name, found_user.Organization[0].Name)
-	assert.Equal(t, test_user.Organization[0].Role, found_user.Organization[0].Role)
+	assert.Equal(t, test_user.OrganizationAuthorization[0].OrganizationID, found_user.OrganizationAuthorization[0].OrganizationID)
+	assert.Equal(t, test_user.OrganizationAuthorization[0].Role, found_user.OrganizationAuthorization[0].Role)
 
 }
 
 func TestUsernameAlreadyTaken(t *testing.T) {
 	test_user := models.User{
-		Username:     "LostProgrammer1010",
-		Password:     "test",
-		FirstName:    "test",
-		LastName:     "test",
-		Email:        "test",
-		Organization: []models.Organization{{Name: "NSVC", Role: "ADMIN"}},
+		Username:                  "LostProgrammer1010",
+		Password:                  "test",
+		FirstName:                 "test",
+		LastName:                  "test",
+		Email:                     "test",
+		OrganizationAuthorization: []models.OrganizationAuthorization{{OrganizationID: primitive.NewObjectID(), Role: "ADMIN"}},
 	}
 
 	err := AddUser(test_user)
@@ -92,18 +93,18 @@ func TestUsernameAlreadyTaken(t *testing.T) {
 	assert.False(t, authentication.VerifyPassword(found_user.Password, test_user.Password))
 	assert.NotEqual(t, test_user.FirstName, found_user.FirstName)
 	assert.NotEqual(t, test_user.LastName, found_user.LastName)
-	assert.Equal(t, test_user.Organization[0].Name, found_user.Organization[0].Name)
-	assert.Equal(t, test_user.Organization[0].Role, found_user.Organization[0].Role)
+	assert.Equal(t, test_user.OrganizationAuthorization[0].OrganizationID, found_user.OrganizationAuthorization[0].OrganizationID)
+	assert.Equal(t, test_user.OrganizationAuthorization[0].Role, found_user.OrganizationAuthorization[0].Role)
 }
 
 func TestEmailAlreadyTaken(t *testing.T) {
 	test_user := models.User{
-		Username:     "test",
-		Password:     "test",
-		FirstName:    "test",
-		LastName:     "test",
-		Email:        "check@gmail.com",
-		Organization: []models.Organization{{Name: "NSVC", Role: "ADMIN"}},
+		Username:                  "test",
+		Password:                  "test",
+		FirstName:                 "test",
+		LastName:                  "test",
+		Email:                     "check@gmail.com",
+		OrganizationAuthorization: []models.OrganizationAuthorization{{OrganizationID: primitive.NewObjectID(), Role: "ADMIN"}},
 	}
 
 	err := AddUser(test_user)
@@ -117,6 +118,6 @@ func TestEmailAlreadyTaken(t *testing.T) {
 	assert.False(t, authentication.VerifyPassword(found_user.Password, test_user.Password))
 	assert.NotEqual(t, test_user.FirstName, found_user.FirstName)
 	assert.NotEqual(t, test_user.LastName, found_user.LastName)
-	assert.Equal(t, test_user.Organization[0].Name, found_user.Organization[0].Name)
-	assert.Equal(t, test_user.Organization[0].Role, found_user.Organization[0].Role)
+	assert.Equal(t, test_user.OrganizationAuthorization[0].OrganizationID, found_user.OrganizationAuthorization[0].OrganizationID)
+	assert.Equal(t, test_user.OrganizationAuthorization[0].Role, found_user.OrganizationAuthorization[0].Role)
 }

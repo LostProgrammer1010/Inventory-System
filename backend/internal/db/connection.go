@@ -2,10 +2,10 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,7 +16,10 @@ var client *mongo.Client
 func Init() {
 
 	connect()
+
 	userCollection = client.Database("InventorySystem").Collection("Users")
+	poleCollection = client.Database("InventorySystem").Collection("Poles")
+	organizationCollection = client.Database("InventorySystem").Collection("Organization")
 
 	createUniqueIndexes(client.Database("InventorySystem").Collection("Users"), []string{"email", "username"})
 }

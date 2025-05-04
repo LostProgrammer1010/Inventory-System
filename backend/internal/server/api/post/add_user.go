@@ -3,6 +3,7 @@ package post
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/LostProgrammer1010/InventorySystem/internal/db"
 	"github.com/LostProgrammer1010/InventorySystem/internal/models"
@@ -31,9 +32,16 @@ func AddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	newUser.RefreshToken = make([]models.RefreshToken, 0)
+
 	err = db.AddUser(newUser)
 
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key") {
+			w.WriteHeader(http.StatusConflict)
+			w.Write([]byte("Duplicate email or username"))
+			return
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
